@@ -40,6 +40,8 @@ namespace LINQStyleToSQL
 
         public static IEnumerable<(T, U)> Include<T, Y, U>(this IEnumerable<T> items, Expression<Func<T, Y>> includeItemsFilter, Expression<Func<Y, U>> filter)
         {
+            Console.WriteLine(filter);
+
             foreach (var item in items)
             {
                 var includeItem = item.Then(includeItemsFilter);
