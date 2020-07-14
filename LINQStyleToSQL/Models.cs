@@ -80,7 +80,7 @@ namespace LINQStyleToSQL
             QueuedCommands.Add(command);
         }
 
-        public QueryableCollection<T> Build<T>()
+        public QueryableCollection<T> Build<T>() where T: class, new()
         {
             var query = "";
 
@@ -166,7 +166,7 @@ namespace LINQStyleToSQL
                             foreach (var splitPart in splitParts)
                             {
                                 var parsedStringPart = splitPart.Replace(" == ", "=")
-                                    .Replace(parameter.Type.Name + ".", "").ToUpper();
+                                    .Replace(parameter.Type.Name + ".", "").ToUpper().Replace("\"", "'");
 
                                 Console.WriteLine(splitPart);
                                 Console.WriteLine(parsedStringPart);
@@ -186,7 +186,7 @@ namespace LINQStyleToSQL
                     case SqlCommandType.FROM:
                         var name = typeof(T).Name;
 
-                        query += "FROM " + name + " ";
+                        query += "FROM " + "dbo." + name + " ";
                         break;
                 }
             }
@@ -194,8 +194,9 @@ namespace LINQStyleToSQL
             //TODO execute query
             Console.WriteLine(query);
             var queryResult = new List<T>();
-
-            return new QueryableCollection<T>(queryResult);
+            var customReader = new SQLToObjectMapper();
+            var x = customReader.Query<T>(query);
+            return new QueryableCollection<T>(x);
         }
     }
 
@@ -204,7 +205,11 @@ namespace LINQStyleToSQL
         public Expression Expression { get; set; }
         public SqlCommandType Type { get; set; }
     }
-
+    public class Student
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
     public enum SqlCommandType
     {
         WHERE,

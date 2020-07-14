@@ -40,7 +40,7 @@ namespace LINQStyleToSQL
         }
 
         public static QueryableCollection<T> Where<T>(this QueryableCollection<T> collection,
-            Expression<Func<T, bool>> predicate)
+            Expression<Func<T, bool>> predicate) where T : class, new()
         {
             if (collection.Source != null)
             {
