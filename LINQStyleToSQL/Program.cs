@@ -37,9 +37,18 @@ namespace LINQStyleToSQL
                 Groups = new[] { group1 }
             }};
 
+            Group[] groups = { group1, group2 };
+
             var results = users.Select(user => user)
                 .Where(user => user.Name == "Test" && user.Age == 10);
-                //.Include(x => x.Groups, (groups => groups.Select(group => group.Name)));
+
+            var results2 = groups.Select(group => group.Name)
+                .Where(group => group.Name == "Test 3");
+
+            foreach (var @group in results2)
+            {
+                Console.WriteLine(new {@group});
+            }
 
             foreach (var result in results)
             {

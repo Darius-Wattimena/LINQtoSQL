@@ -103,17 +103,38 @@ namespace LINQStyleToSQL
                             }
                             else
                             {
-                                part = part.Substring(part.IndexOf("(") + 1);
-                                part = part.Substring(0, part.IndexOf(")"));
-                                part = part.Replace(parameter.Name + ".", parameter.Type.Name + ".")
-                                    .Replace("AndAlso", "&&");
-                                var splitParts = part.Split(",");
-
-                                foreach (var splitPart in splitParts)
+                                if (part.EndsWith(")"))
                                 {
-                                    var parsedStringPart = splitPart.Substring(0, splitPart.IndexOf(" =")).ToUpper();
+                                    part = part.Substring(part.IndexOf("(") + 1);
+                                    part = part.Substring(0, part.IndexOf(")"));
+                                    part = part.Replace(parameter.Name + ".", parameter.Type.Name + ".")
+                                        .Replace("AndAlso", "&&");
+                                    var splitParts = part.Split(",");
 
-                                    Console.WriteLine(splitPart);
+                                    foreach (var splitPart in splitParts)
+                                    {
+                                        var parsedStringPart = splitPart.Substring(0, splitPart.IndexOf(" =")).ToUpper();
+
+                                        Console.WriteLine(splitPart);
+                                        Console.WriteLine(parsedStringPart);
+
+                                        if (first)
+                                        {
+                                            query += "SELECT " + parsedStringPart;
+                                            first = false;
+                                        }
+                                        else
+                                        {
+                                            query += "," + parsedStringPart;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    part = part.Replace(parameter.Name + ".", parameter.Type.Name + ".");
+
+                                    var parsedStringPart = part.Split(".")[1].ToUpper();
+
                                     Console.WriteLine(parsedStringPart);
 
                                     if (first)
