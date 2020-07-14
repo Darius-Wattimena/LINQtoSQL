@@ -6,6 +6,6 @@ namespace LINQStyleToSQL
 {
     public static class ConnectionString
     {
-        public static readonly string Path = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\documenten\Portfolio\LINQtoSQL\LINQStyleToSQL\Database1.mdf;Integrated Security=True";
+        public static readonly string Path = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\dariu\source\repos\LINQStyleToSQL\LINQStyleToSQL\Database1.mdf;Integrated Security=True";
     }
 }

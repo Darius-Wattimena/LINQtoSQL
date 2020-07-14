@@ -159,27 +159,22 @@ namespace LINQStyleToSQL
                             part = part.Replace(parameter.Name + ".", parameter.Type.Name + ".")
                                 .Replace("(", "")
                                 .Replace(")", "")
-                                .Replace("AndAlso", "&&");
+                                .Replace("AndAlso", "AND")
+                                .Replace("OrElse", "OR")
+                                .Replace(parameter.Type.Name + ".", "")
+                                .Replace("\"", "'")
+                                .Replace(" == ", "=");
 
-                            var splitParts = part.Split("&& ");
+                            //var splitParts = part.Split("&& ");
 
-                            foreach (var splitPart in splitParts)
+                            if (first)
                             {
-                                var parsedStringPart = splitPart.Replace(" == ", "=")
-                                    .Replace(parameter.Type.Name + ".", "").ToUpper().Replace("\"", "'");
-
-                                Console.WriteLine(splitPart);
-                                Console.WriteLine(parsedStringPart);
-
-                                if (first)
-                                {
-                                    query += "WHERE " + parsedStringPart;
-                                    first = false;
-                                }
-                                else
-                                {
-                                    query += "&& " + parsedStringPart;
-                                }
+                                query += "WHERE " + part;
+                                first = false;
+                            }
+                            else
+                            {
+                                query += "&& " + part;
                             }
                         }
                         break;
