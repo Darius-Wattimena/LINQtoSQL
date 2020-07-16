@@ -11,8 +11,8 @@ namespace LINQStyleToSQL
             //Group[] groups = { group1, group2 };
             var customReader = new SQLToObjectMapper();
             var queryResult = customReader.Query<Student>(@"SELECT FirstName, LastName FROM dbo.Student");
-            var results = queryResult.Select(student => student)
-                .Where(student => student.FirstName == "Darius" || student.FirstName == "Samuel");
+            var results = queryResult.Select(student => new {student.FirstName, student.LastName})
+                .Where(student => student.FirstName == "Darius");
 
             //var results2 = groups.Select(group => group.Name)
             //    .Where(group => group.Name == "Test 3");
@@ -24,7 +24,7 @@ namespace LINQStyleToSQL
 
             foreach (var result in results)
             {
-                Console.WriteLine(new { result.FirstName, result.LastName });
+                Console.WriteLine(new { result });
             }
         }
     }

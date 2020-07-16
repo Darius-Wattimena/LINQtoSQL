@@ -29,36 +29,35 @@ namespace LINQStyleToSQL
             }
         }
 
-        private static QueryableCollection<T> ToQueryableCollection<T>(this ICollection<T> objects)
+        private static QueryableCollection<T> ToQueryableCollection<T>(this ICollection<T> objects, Type type)
         {
-            return new QueryableCollection<T>(objects);
+            return new QueryableCollection<T>(objects, type);
         }
 
-        public static QueryableCollection<T> Select<T, Y>(this ICollection<T> collection, Expression<Func<T, Y>> filter)
+        public static SelectQuery<T, Y> Select<T, Y>(this ICollection<T> collection, Expression<Func<T, Y>> filter)
         {
-            return Select(collection.ToQueryableCollection(), filter);
+            return Select(collection.ToQueryableCollection(typeof(Y)), filter);
         }
 
-        public static QueryableCollection<T> Where<T>(this QueryableCollection<T> collection,
-            Expression<Func<T, bool>> predicate) where T : class, new()
+        public static QueryableCollection<Y> Where<T, Y>(this SelectQuery<T, Y> query,
+            Expression<Func<T, bool>> predicate) where T : class, new() where Y : class
         {
-            if (collection.Source != null)
-            {
-                return collection.Then(x => new QueryableCollection<T>(collection,
-                    new SQLCommand { Expression = predicate, Type = SqlCommandType.WHERE }))
-                    .Then(x => x.Builder.Build<T>());
-            }
+            var collection = query.Collection;
 
-            return collection.Then(x => new QueryableCollection<T>(collection,
-                new SQLCommand { Expression = predicate, Type = SqlCommandType.WHERE }));
+            collection.Builder.AddCommand(new SQLCommand { Expression = predicate, Type = SqlCommandType.WHERE });
+
+            return collection.Then(x => x.Builder.Build<T, Y>());
         }
 
-        public static QueryableCollection<T> Select<T, Y>(this QueryableCollection<T> collection,
+        public static SelectQuery<T, Y> Select<T, Y>(this QueryableCollection<T> collection,
             Expression<Func<T, Y>> select)
         {
-            return collection.Then(x => new QueryableCollection<T>(collection,
-                new SQLCommand { Expression = select, Type = SqlCommandType.SELECT })).Then(x => new QueryableCollection<T>(collection,
-                new SQLCommand { Expression = select, Type = SqlCommandType.FROM }));
+            return new SelectQuery<T, Y>(
+                collection.Then(x => new QueryableCollection<T>(collection,
+                        new SQLCommand {Expression = select, Type = SqlCommandType.SELECT}))
+                    .Then(x => new QueryableCollection<T>(collection,
+                        new SQLCommand {Expression = select, Type = SqlCommandType.FROM}))
+            );
         }
 
         /*public static IEnumerable<Y> MSelect<T, Y>(this ISequence<T> source, Expression<Func<T, Y>> filter)

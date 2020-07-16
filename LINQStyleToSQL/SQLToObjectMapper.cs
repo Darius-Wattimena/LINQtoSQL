@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Dynamic;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace LINQStyleToSQL
 {
@@ -12,7 +15,7 @@ namespace LINQStyleToSQL
         {
         }        
 
-        public ICollection<T> Query<T>(string query) where T : class, new()
+        public ICollection<T> Query<T>(string query) where T : class
         {
             var connectionString = GetConnectionString();
 
@@ -38,7 +41,7 @@ namespace LINQStyleToSQL
             return TCollection;
         }
 
-        private T Single<T>(IDataRecord record) where T : class, new()
+        private T Single<T>(IDataRecord record) where T : class
         {
             if (record == null)
             {
@@ -53,16 +56,40 @@ namespace LINQStyleToSQL
                 throw new ArgumentException("reflection failed, T has no readable public properties");
             }
 
-            T newT = new T();
+            T newT = (T) FormatterServices.GetUninitializedObject(type);
+
+            //T newT = new T();
+
+            var resultT = new ExpandoObject() as IDictionary<string, Object>;
+            
 
             foreach (var property in properties)
             {
-                if (property != null & property.CanWrite)
-                {
-                    property.SetValue(newT, record[property.Name]);
-                }
+                resultT.Add(property.Name, record[property.Name]);
             }
-            return newT;
+
+            return Convert((ExpandoObject) resultT, newT);
+
+            //return (T) resultT;
+        }
+
+        public T Convert<T>(ExpandoObject source, T example)
+            where T : class
+        {
+            IDictionary<string, object> dict = source;
+
+            var ctor = example.GetType().GetConstructors().Single();
+
+            var parameters = ctor.GetParameters();
+
+            var parameterValues = new List<Object>();
+
+            foreach (var parameter in parameters)
+            {
+                parameterValues.Add(dict[parameter.Name]);
+            }
+
+            return (T) ctor.Invoke(parameterValues.ToArray());
         }
 
         private string GetQuery()

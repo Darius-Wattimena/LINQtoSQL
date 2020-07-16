@@ -5,21 +5,31 @@ using System.Linq.Expressions;
 
 namespace LINQStyleToSQL
 {
+    public class SelectQuery<T, Y>
+    {
+        public QueryableCollection<T> Collection { get; set; }
+
+        public SelectQuery(QueryableCollection<T> collection)
+        {
+            Collection = collection;
+        }
+    }
 
     public class QueryableCollection<T> : ICollection<T>
     {
         public ICollection<T> Data { get; set; }
         public QueryableCollection<T> Source { get; set; }
-
         public QueryBuilder Builder { get; set; }
+        public Type SelectType { get; set; }
 
         public int Count => Data.Count;
 
         public bool IsReadOnly => Data.IsReadOnly;
 
-        public QueryableCollection(ICollection<T> data)
+        public QueryableCollection(ICollection<T> data, Type selectType)
         {
             Data = data;
+            SelectType = selectType;
             Builder = new QueryBuilder();
         }
         public QueryableCollection(QueryableCollection<T> instance, SQLCommand command)
@@ -80,7 +90,8 @@ namespace LINQStyleToSQL
             QueuedCommands.Add(command);
         }
 
-        public QueryableCollection<T> Build<T>() where T: class, new()
+        public QueryableCollection<Y> Build<T, Y>()
+            where T: class, new() where Y : class
         {
             var query = "";
 
@@ -190,8 +201,8 @@ namespace LINQStyleToSQL
             Console.WriteLine(query);
             var queryResult = new List<T>();
             var customReader = new SQLToObjectMapper();
-            var x = customReader.Query<T>(query);
-            return new QueryableCollection<T>(x);
+            var x = customReader.Query<Y>(query);
+            return new QueryableCollection<Y>(x, typeof(Y));
         }
     }
 
